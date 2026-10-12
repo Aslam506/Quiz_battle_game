@@ -1,0 +1,33 @@
+<h2>Admin Dashboard</h2>
+
+<h3>Create Quiz</h3>
+<input id="qt" placeholder="Quiz Title">
+<input id="tl" placeholder="Time Limit">
+<button onclick="quiz()">Create</button>
+
+<h3>Add Question</h3>
+<input id="q" placeholder="Question">
+<button onclick="add()">Add</button>
+
+<h3>Leaderboard</h3>
+<button onclick="load()">View</button>
+<div id="l"></div>
+
+<script>
+function quiz(){
+ fetch('/admin/quiz',{method:'POST',headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({title:qt.value,timeLimit:tl.value})});
+}
+function add(){
+ fetch('/admin/question',{method:'POST',headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({
+  quizId:1,question:q.value,
+  optionA:"A",optionB:"B",optionC:"C",optionD:"D",
+  correctOption:"A",topic:"General",difficulty:"Easy",points:10
+ })});
+}
+function load(){
+ fetch('/admin/leaderboard').then(r=>r.json())
+ .then(d=>l.innerHTML=JSON.stringify(d));
+}
+</script>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Login</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+    height: 100vh;
+    background:
+        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+        url("https://images.unsplash.com/photo-1521791136064-7986c2920216");
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.login-title {
+    font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div class="login-card p-4">
+    <h3 class="text-center login-title mb-4">User Login</h3>
+
+    <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input id="u" type="text" class="form-control" placeholder="Enter username">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input id="p" type="password" class="form-control" placeholder="Enter password">
+    </div>
+
+    <div class="d-grid">
+        <button class="btn btn-primary btn-lg" onclick="login()">Login</button>
+    </div>
+</div>
+
+<script>
+
+/* ================= PREVENT BACK IF ALREADY LOGGED ================= */
+if (localStorage.username) {
+    window.location.replace("player-dashboard.html");
+}
+
+/* ================= LOGIN FUNCTION ================= */
+async function login() {
+
+    if (!u.value || !p.value) {
+        alert("Please enter username and password");
+        return;
+    }
+
+    try {
+        const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: u.value,
+                password: p.value
+            })
+        });
+
+        if (!response.ok) {
+            alert("Invalid credentials");
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.role === 'PLAYER') {
+            localStorage.setItem("username", data.username);
+            window.location.replace("player-dashboard.html");
+        } else {
+            alert("Not a Player account");
+        }
+
+    } catch (error) {
+        alert("Server error. Try again.");
+    }
+}
+
+/* ================= PREVENT BACK BUTTON AFTER LOGIN ================= */
+history.pushState(null, null, location.href);
+window.addEventListener("popstate", function () {
+    history.pushState(null, null, location.href);
+});
+
+/* ================= CLEAR SESSION ON TAB CLOSE ================= */
+window.addEventListener("beforeunload", function () {
+    // Do not clear here if you want persistent login
+    // Uncomment below if you want auto logout on tab close
+    // localStorage.clear();
+});
+
+</script>
+
+</body>
+</html>

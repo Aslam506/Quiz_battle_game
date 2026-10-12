@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Battle | Ultimate Challenge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-glow: #00f2fe;
+            --secondary-glow: #4facfe;
+            --accent-color: #f093fb;
+            --panel-bg: rgba(10, 14, 23, 0.85); /* Solid enough for text visibility */
+            --text-main: #ffffff;
+        }
+
+        /* Essential for Full Screen */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Lock scroll */
+            background-color: #06090f;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Full Screen Background Wrapper */
+        .viewport-wrapper {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: 
+                linear-gradient(rgba(6, 9, 15, 0.7), rgba(6, 9, 15, 0.8)),
+                url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* The Main Central Card */
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 242, 254, 0.3);
+            border-radius: 30px;
+            padding: 60px 40px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Goldman', cursive;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+            margin-bottom: 10px;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            color: var(--primary-glow);
+            font-size: 0.9rem;
+            margin-bottom: 40px;
+            letter-spacing: 5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Buttons Update */
+        .btn-battle {
+            position: relative;
+            padding: 18px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .btn-register {
+            background: linear-gradient(45deg, #00dbde 0%, #fc00ff 100%);
+            box-shadow: 0 4px 20px rgba(252, 0, 255, 0.4);
+        }
+
+        .btn-login {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--primary-glow);
+            color: var(--primary-glow);
+        }
+
+        .btn-battle:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 242, 254, 0.4);
+            color: #fff;
+        }
+
+        .admin-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            transition: 0.3s;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .admin-link:hover {
+            opacity: 1;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Subtle Grid Overlay */
+        .grid-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="viewport-wrapper">
+        <div class="grid-overlay"></div>
+        
+        <div class="glass-panel">
+            <div class="mb-4">
+                <div class="d-inline-block p-3 rounded-circle" style="background: rgba(0, 242, 254, 0.1); border: 2px solid var(--primary-glow);">
+                    <i class="fa-solid fa-shield-halved fa-3x" style="color: var(--primary-glow);"></i>
+                </div>
+            </div>
+            
+            <h1>A Real-Time Multiplayer  <br>Quiz Battle</h1>
+            <p class="subtitle">Tactical Engagement</p>
+            
+            <div class="d-grid">
+                <button onclick="location='user-register.html'" class="btn btn-battle btn-register">
+                    <i class="fa-solid fa-user-plus me-2"></i> Create Profile
+                </button>
+                
+                <button onclick="location='user-login.html'" class="btn btn-battle btn-login">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i> Player LOgin
+                </button>
+            </div>
+
+            <div class="admin-section">
+                <a href="admin-login.html" class="admin-link">
+                    <i class="fa-solid fa-user-gear me-1"></i> ADMIN COMMAND CENTER
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

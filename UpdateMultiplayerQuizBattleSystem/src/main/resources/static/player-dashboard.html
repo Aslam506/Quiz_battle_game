@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battle Arena | Tactical Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+    --neon-blue:#00f2ff;
+    --neon-purple:#bc13fe;
+    --neon-green:#39ff14;
+    --dark-bg:#0f111a;
+    --panel-bg:#1a1d29;
+    --text-main:#ffffff;
+    --text-muted:#a0aec0;
+}
+
+body{
+    background:var(--dark-bg);
+    font-family:'Inter',sans-serif;
+    color:var(--text-main);
+    min-height:100vh;
+    margin:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.main-wrapper{
+    display:grid;
+    grid-template-columns:1fr 350px;
+    gap:30px;
+    width:95%;
+    max-width:1200px;
+}
+
+.arena-card{
+    background:var(--panel-bg);
+    border-radius:24px;
+    padding:40px;
+}
+
+h2{
+    font-family:'Syncopate',sans-serif;
+    letter-spacing:4px;
+    color:var(--neon-blue);
+}
+
+.question-text{
+    font-size:1.6rem;
+    font-weight:800;
+    background:rgba(0,0,0,0.3);
+    padding:25px;
+    border-radius:15px;
+    border-left:6px solid var(--neon-blue);
+    margin-bottom:25px;
+}
+
+.options-list{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.btn-battle{
+    background:#25293a;
+    border:2px solid rgba(255,255,255,0.1);
+    color:white;
+    padding:18px;
+    border-radius:12px;
+    text-align:left;
+    font-weight:600;
+}
+
+.btn-battle:hover:not(:disabled){
+    border-color:var(--neon-blue);
+}
+
+.stat-box{
+    background:var(--panel-bg);
+    border-radius:20px;
+    padding:25px;
+    margin-bottom:20px;
+    text-align:center;
+}
+
+.timer-display{
+    font-size:3rem;
+    font-weight:800;
+    color:var(--neon-blue);
+}
+
+.score-val{
+    font-size:3rem;
+    font-weight:800;
+    color:var(--neon-green);
+}
+
+#joinBtn{
+    background:linear-gradient(135deg,var(--neon-blue),var(--neon-purple));
+    color:white;
+    font-weight:800;
+    padding:15px 40px;
+    border:none;
+    border-radius:50px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="main-wrapper">
+
+<div class="arena-card">
+
+<div class="d-flex justify-content-between mb-4">
+    <h2>COMBAT INTERFACE</h2>
+    <div>OPERATOR: <span id="name" class="fw-bold"></span></div>
+	<span onclick="logout()" class="logout-btn">
+	      <i class="fa-solid fa-power-off"></i> LOGOUT
+	  </span>
+
+</div>
+
+<div id="start-screen" class="text-center py-5">
+    <h1 class="mb-4">Real-Time Quiz Battle</h1>
+    <button id="joinBtn" onclick="join()">Start Quiz</button>
+</div>
+
+<div id="game-ui" style="display:none;">
+    <div id="q" class="question-text">Synchronizing...</div>
+
+    <div class="options-list">
+        <button id="A" class="btn-battle" onclick="answer('A')">A</button>
+        <button id="B" class="btn-battle" onclick="answer('B')">B</button>
+        <button id="C" class="btn-battle" onclick="answer('C')">C</button>
+        <button id="D" class="btn-battle" onclick="answer('D')">D</button>
+    </div>
+</div>
+
+</div>
+
+<div>
+    <div class="stat-box">
+        <div>Time Remaining</div>
+        <div id="timerText" class="timer-display">00</div>
+    </div>
+
+    <div class="stat-box">
+        <div>Combat Score</div>
+        <div id="liveScore" class="score-val">0000</div>
+    </div>
+
+    <div class="stat-box">
+        <div>Efficiency Graph</div>
+        <canvas id="scoreChart" height="150"></canvas>
+    </div>
+</div>
+
+</div>
+
+  <div>
+	
+	
+  </div>
+
+<script>
+
+/* ================= SECURITY CHECK ================= */
+if(!localStorage.username){
+    window.location.replace("index.html");
+}
+
+/* ================= USER ================= */
+const username = localStorage.username;
+document.getElementById("name").innerText = username.toUpperCase();
+
+const qText = document.getElementById("q");
+const startScreen = document.getElementById("start-screen");
+const gameUI = document.getElementById("game-ui");
+const liveScore = document.getElementById("liveScore");
+
+let ws=null;
+let timerInterval=null;
+let currentScore=0;
+
+/* ================= BACK BUTTON BLOCK ================= */
+history.pushState(null,null,location.href);
+window.addEventListener("popstate",()=>logout());
+
+/* ================= GRAPH ================= */
+const ctx=document.getElementById("scoreChart").getContext("2d");
+const scoreChart=new Chart(ctx,{
+    type:"line",
+    data:{labels:[],datasets:[{
+        data:[],
+        borderColor:"#00f2ff",
+        borderWidth:3,
+        fill:true,
+        backgroundColor:"rgba(0,242,255,0.1)"
+    }]},
+    options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{beginAtZero:true}}}
+});
+
+/* ================= WEBSOCKET ================= */
+function connect(){
+    if(ws && ws.readyState===1) return;
+
+    ws=new WebSocket("ws://localhost:9090/game?username="+encodeURIComponent(username));
+
+    ws.onmessage=(e)=>{
+        let d=e.data.split("|");
+        if(d[0]==="Q") showQuestion(d);
+        if(d[0]==="END"){
+            qText.innerText="MISSION COMPLETE. FINAL SCORE: "+d[1];
+            disableOptions();
+        }
+    };
+}
+
+/* ================= JOIN ================= */
+function join(){
+    connect();
+    setTimeout(()=>{
+        if(ws && ws.readyState===1){
+            ws.send("JOIN");
+            startScreen.style.display="none";
+            gameUI.style.display="block";
+        }
+    },300);
+}
+
+/* ================= QUESTION ================= */
+function showQuestion(d){
+    enableOptions();
+    qText.innerText=d[1];
+    document.getElementById("A").innerText=d[2];
+    document.getElementById("B").innerText=d[3];
+    document.getElementById("C").innerText=d[4];
+    document.getElementById("D").innerText=d[5];
+    startTimer(600);
+}
+
+/* ================= TIMER ================= */
+function startTimer(sec){
+    clearInterval(timerInterval);
+    let t=sec;
+    document.getElementById("timerText").innerText=t;
+    timerInterval=setInterval(()=>{
+        t--;
+        document.getElementById("timerText").innerText=t<10?"0"+t:t;
+        if(t<=0){
+            clearInterval(timerInterval);
+            disableOptions();
+        }
+    },1000);
+//}
+
+/* ================= ANSWER ================= */
+function answer(opt){
+    if(ws && ws.readyState===1) ws.send(opt);
+    disableOptions();
+
+    currentScore+=100;
+    liveScore.innerText=currentScore.toString().padStart(4,"0");
+
+    scoreChart.data.labels.push("");
+    scoreChart.data.datasets[0].data.push(currentScore);
+    scoreChart.update();
+}
+
+/* ================= OPTIONS ================= */
+function disableOptions(){
+    ["A","B","C","D"].forEach(id=>document.getElementById(id).disabled=true);
+}
+function enableOptions(){
+    ["A","B","C","D"].forEach(id=>document.getElementById(id).disabled=false);
+}
+
+/* ================= LOGOUT ================= */
+function logout(){
+    if(ws) ws.close();
+    clearInterval(timerInterval);
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace("index.html");
+}
+
+/* ================= TAB CLOSE ================= */
+window.addEventListener("beforeunload",()=>{
+    if(ws) ws.close();
+    localStorage.clear();
+});
+
+connect();
+
+</script>
+</body>
+</html>

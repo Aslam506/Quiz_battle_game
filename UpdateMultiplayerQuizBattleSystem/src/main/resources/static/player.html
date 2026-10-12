@@ -1,0 +1,31 @@
+<html>
+<body>
+	
+	<h2>Player Dashboard</h2>
+	<button onclick="join()">Join Match</button>
+	<div id="q"></div>
+	<div id="t"></div>
+
+	<button onclick="ans('A')">A</button>
+	<button onclick="ans('B')">B</button>
+
+	<script>
+	let ws=new WebSocket("ws://localhost:9090/game");
+
+	ws.onmessage=e=>{
+	 let d=e.data.split("|");
+	 if(d[0]=="Q"){ q.innerText=d[1]; t.innerText="Time:"+d[2]; }
+	 if(d[0]=="S") alert("Score: "+d[1]);
+	};
+
+	function join(){ ws.send("JOIN"); }
+	function ans(a){ ws.send(a); }
+	</script>
+
+	
+	
+</body>	
+
+
+
+</html>
